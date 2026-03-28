@@ -110,10 +110,10 @@ Large files are intentionally distributed outside the Git repository.
 
 | Asset | Content | Extract To | Link |
 | --- | --- | --- | --- |
-| Pretrained models | trained checkpoints under `experiments/` | `HBExMNet/experiments/` | [models](https://drive.google.com/file/d/1-3rAfLrllMZDUWnQgUhWPFKFb2ahjIH3/view?usp=drive_link) |
-| Test data package | example TIFF stacks for inference | sibling folder `data/` beside `HBExMNet/` | [data](https://drive.google.com/file/d/1-3rAfLrllMZDUWnQgUhWPFKFb2ahjIH3/view?usp=drive_link) |
-| Optional training sample package | example `LR` and `GT` folders for training | sibling folder `Train_data/` beside `HBExMNet/` | [Train_data](https://drive.google.com/file/d/1-3rAfLrllMZDUWnQgUhWPFKFb2ahjIH3/view?usp=drive_link) |
-| Standalone Windows software | compiled C++ TensorRT inference package | any local folder | [Software](https://drive.google.com/file/d/1-3rAfLrllMZDUWnQgUhWPFKFb2ahjIH3/view?usp=drive_link) |
+| Pretrained models | trained checkpoints under `experiments/` | `HBExMNet/experiments/` | <div align="center"><a href="https://drive.google.com/file/d/1-3rAfLrllMZDUWnQgUhWPFKFb2ahjIH3/view?usp=drive_link"><img src="https://img.shields.io/badge/Models-4285F4?style=flat-square&logo=googledrive&logoColor=white" alt="Models" /></a></div> |
+| Test data package | example TIFF stacks for inference | sibling folder `data/` beside `HBExMNet/` | <div align="center"><a href="https://drive.google.com/file/d/1-3rAfLrllMZDUWnQgUhWPFKFb2ahjIH3/view?usp=drive_link"><img src="https://img.shields.io/badge/Data-4285F4?style=flat-square&logo=googledrive&logoColor=white" alt="Data" /></a></div> |
+| Optional training sample package | example `LR` and `GT` folders for training | sibling folder `Train_data/` beside `HBExMNet/` | <div align="center"><a href="https://drive.google.com/file/d/1-3rAfLrllMZDUWnQgUhWPFKFb2ahjIH3/view?usp=drive_link"><img src="https://img.shields.io/badge/Train__data-4285F4?style=flat-square&logo=googledrive&logoColor=white" alt="Train_data" /></a></div> |
+| Standalone Windows software | compiled C++ TensorRT inference package | any local folder | <div align="center"><a href="https://drive.google.com/file/d/1-3rAfLrllMZDUWnQgUhWPFKFb2ahjIH3/view?usp=drive_link"><img src="https://img.shields.io/badge/Software-4285F4?style=flat-square&logo=googledrive&logoColor=white" alt="Software" /></a></div> |
 
 ## Main Entry Points
 
