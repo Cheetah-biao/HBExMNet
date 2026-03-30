@@ -221,7 +221,7 @@ class Triple_stage_v_Model(BaseModel):
         with torch.no_grad():
             net1_out = self.net1(block)
             if self.opt['Net_SR']['which_model'] == 'HAT':
-                net_out = self.netSR(net1_out, size=b_shape).squeeze()
+                net_out = self.netSR(x=net1_out, size=b_shape).squeeze()
             else:
                 net_out = self.netSR(net1_out).squeeze()
             out = net_out.float().cpu().numpy()
@@ -242,7 +242,7 @@ class Triple_stage_v_Model(BaseModel):
             denoise_out = self.net_denoise(block)
             net1_out = self.net1(denoise_out)
             if self.opt['Net_SR']['which_model'] == 'HAT':
-                net_out = self.netSR(net1_out, size=b_shape).squeeze()
+                net_out = self.netSR(x=net1_out, size=b_shape).squeeze()
             else:
                 net_out = self.netSR(net1_out).squeeze()
             out = net_out.float().cpu().numpy()
