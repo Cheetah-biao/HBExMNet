@@ -36,7 +36,6 @@ def _parse_cli_args():
     parser.add_argument("--task", choices=["Denoise", "SR"])
     parser.add_argument("--hr-path")
     parser.add_argument("--lr-path")
-    parser.add_argument("--mr-path")
     parser.add_argument("--patch-d", type=int)
     parser.add_argument("--patch-h", type=int)
     parser.add_argument("--patch-w", type=int)
@@ -55,7 +54,6 @@ def _selection_from_args(args):
         "task": args.task,
         "hr_path": args.hr_path,
         "lr_path": args.lr_path,
-        "mr_path": args.mr_path,
         "patch_d": args.patch_d,
         "patch_h": args.patch_h,
         "patch_w": args.patch_w,
@@ -396,14 +394,13 @@ def run_sr_main(opt_path, model_name, training_data_file, launcher="none", overr
 
 if __name__ == "__main__":
     args = _parse_cli_args()
-    label_tag, factor, hr_path, lr_path, mr_path, training_data_file = _build_training_request(args)
+    label_tag, factor, hr_path, lr_path, training_data_file = _build_training_request(args)
 
     print("--- Configuration Completed ---")
     print(f"Model Label: {label_tag}")
     print(f"Factor: {factor}")
     print(f"GT Path: {hr_path}")
     print(f"Raw Data Path: {lr_path}")
-    print(f"MR Path: {mr_path}")
     print(f"Training Data File: {training_data_file}")
 
     overrides = {

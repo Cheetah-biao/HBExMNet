@@ -1,21 +1,21 @@
 import os.path
-import sys
 import time
 import argparse
+from datetime import datetime
 
 import torch
-from utils.logger import get_logger
-from utils.util import list_any_in_str, slice2str
-from utils.files import mkdirs
-from utils.util import flexible_downsample
-from options import options
-from data import create_dataset, create_dataloader
-from models import create_model
+import imageio
 import numpy as np
 import threading
 import tifffile
-import imageio
 from scipy.ndimage import zoom
+
+from data import create_dataloader, create_dataset
+from models import create_model
+from options import options
+from utils.files import mkdirs
+from utils.logger import get_logger
+from utils.util import flexible_downsample, list_any_in_str, slice2str
 
 logger = get_logger("inference_single_stage")
 
@@ -46,7 +46,15 @@ def _build_inference_selection(args):
     return selection or None
 
 
-def predict_tile(model, x, net_axes_in_div_by, block_size, overlap, method="cover"):
+def _select_predict_fn(model, run_denoise, run_sr):
+    if run_denoise and not run_sr:
+        return getattr(model, f"_{model.__class__.__name__}__predict_block_denoise")
+    if run_sr and not run_denoise:
+        return getattr(model, f"_{model.__class__.__name__}__predict_block_sr")
+    return getattr(model, f"_{model.__class__.__name__}__predict_block_all")
+
+
+def predict_tile(model, x, net_axes_in_div_by, block_size, overlap, run_denoise, run_sr, method="cover"):
     def __broadcast(val):
         val = [val for i in x.shape] if np.isscalar(val) else val
         return val
@@ -137,13 +145,7 @@ def predict_tile(model, x, net_axes_in_div_by, block_size, overlap, method="cove
         logger.debug(
             f"get patch: i_slice: {slice2str(i_slice)}, o_slice: {slice2str(o_slice)}, crop_slice: {slice2str(crop_slice)}")
         block = x_pad[i_slice]
-        if opt['dn_label'] and not opt['sr_label']:
-            predict_fn = getattr(model, f"_{model.__class__.__name__}__predict_block_denoise")
-        elif not opt['dn_label'] and opt['sr_label']:
-            predict_fn = getattr(model, f"_{model.__class__.__name__}__predict_block_sr")
-        else:
-            predict_fn = getattr(model, f"_{model.__class__.__name__}__predict_block_all")
-
+        predict_fn = _select_predict_fn(model, run_denoise=run_denoise, run_sr=run_sr)
         out = predict_fn(block)
 
         # linear blending
@@ -175,6 +177,47 @@ def predict_tile(model, x, net_axes_in_div_by, block_size, overlap, method="cove
         return ret[crop] / count[crop]
     else:
         return ret[crop]
+
+
+def _run_tiled_prediction_with_retry(model, image, min_divide_by, run_denoise, run_sr):
+    net_axes_in_div_by = [min_divide_by] * image.ndim
+    block_size = list(model.block_size)
+    failed_axis = 0
+
+    while True:
+        try:
+            return predict_tile(
+                model,
+                image,
+                net_axes_in_div_by,
+                block_size,
+                model.over_lap,
+                run_denoise=run_denoise,
+                run_sr=run_sr,
+            )
+        except RuntimeError as exc:
+            torch.cuda.empty_cache()
+            retry_axis = image.ndim - 1 - failed_axis
+            block_size = [
+                block_size[index] if index != retry_axis else block_size[index] + 1
+                for index in range(image.ndim)
+            ]
+            failed_axis = (failed_axis + 1) % image.ndim
+            logger.error("Runtime error, retry with block size %s.\n%s", block_size, exc)
+
+
+def _resolve_output_root(base_dir, model_path_ref):
+    now = datetime.now()
+    timestamp = now.strftime("%Y_%m_%d_%H_%M_%S")
+    save_img_base = os.path.join(base_dir, timestamp)
+    os.makedirs(save_img_base, exist_ok=True)
+
+    normalized_path = os.path.normpath(model_path_ref)
+    path_parts = normalized_path.split(os.path.sep)
+    model_label = path_parts[-3] if len(path_parts) >= 3 else "UnknownModel"
+    with open(os.path.join(save_img_base, "label.txt"), "w", encoding="utf-8") as file:
+        file.write(model_label)
+    return save_img_base, path_parts
 
 
 def reverse_and_save_img(img, mi, ma, save_img_path, save_mip_path, scale=1, mode="16bit"):
@@ -240,10 +283,6 @@ def main(opt):
             tiff_file_path = test_set.paths_LQ[idx]
             test_img = test_data[0].numpy()
 
-            # Initial dataset scaling (usually unchanged)
-            # if dataset_opt['zoom_scale'] and dataset_opt['zoom_scale'] > 1:
-            #     test_img = zoom(test_img, (dataset_opt['zoom_scale'], 1, 1), order=1)
-
             mi = mi[0].numpy()
             ma = ma[0].numpy()
             logger.info(f"Processing [{idx + 1}]/[{len(test_loader)}]: {tiff_file_path}...")
@@ -263,20 +302,13 @@ def main(opt):
             path_parts = normalized_path.split(os.path.sep)
             model_filename = path_parts[-1]
             model_basename = os.path.splitext(model_filename)[0]
-            if len(model_basename) > 2: model_basename = model_basename[:-2]
+            if len(model_basename) > 2:
+                model_basename = model_basename[:-2]
 
             # Create the output folder during the first iteration
             base_dir = test_loader.dataset.opt['dataroot_LQ']
-            from datetime import datetime
-            now = datetime.now()
-            formatted_time = now.strftime("%Y-%m-%d %H:%M:%S")
-            custom_time = formatted_time.replace(" ", "_").replace(":", "_").replace("-", "_")
-
             if idx == 0:
-                save_img_base = os.path.join(base_dir, custom_time)
-                os.makedirs(save_img_base, exist_ok=True)
-                with open(os.path.join(save_img_base, 'label.txt'), "w") as file:
-                    file.write(path_parts[-3] if len(path_parts) >= 3 else "UnknownModel")
+                save_img_base, _ = _resolve_output_root(base_dir, model_path_ref)
 
             # === Decide whether split mode is needed ===
             is_split_mode = original_dn_label and original_sr_label
@@ -292,23 +324,14 @@ def main(opt):
                 opt['sr_label'] = False
                 model.factor = 1  # Denoising does not change the spatial size
 
-                denoise_out = None
-                success = False
-                failed_count = 0
-                net_axes_in_div_by = [opt['val'].get('min_devide_by', 8)] * test_img.ndim
-                block_size = list(model.block_size)
-
-                while not success:
-                    try:
-                        denoise_out = predict_tile(model, test_img, net_axes_in_div_by, block_size, model.over_lap)
-                        torch.cuda.empty_cache()
-                        success = True
-                    except RuntimeError as e:
-                        torch.cuda.empty_cache()
-                        block_size = [block_size[i] if i != test_img.ndim - 1 - failed_count else block_size[i] + 1 for
-                                      i in range(test_img.ndim)]
-                        failed_count = (failed_count + 1) % test_img.ndim
-                        logger.error(f"Stage 1 Error, retry: {block_size}...\n{e}")
+                denoise_out = _run_tiled_prediction_with_retry(
+                    model,
+                    test_img,
+                    opt["val"].get("min_devide_by", 8),
+                    run_denoise=True,
+                    run_sr=False,
+                )
+                torch.cuda.empty_cache()
 
                 # ==========================================
                 # Stage 1.5: Z-axis upsampling (intermediate processing)
@@ -331,41 +354,26 @@ def main(opt):
                 opt['sr_label'] = True
                 model.factor = original_scale  # Restore the SR scale factor for XY output size calculation
 
-                success = False
-                failed_count = 0
-                block_size = list(model.block_size)
-
-                while not success:
-                    try:
-                        # Note: sr_input is already enlarged along Z, and predict_tile will tile it automatically
-                        final_result = predict_tile(model, sr_input, net_axes_in_div_by, block_size, model.over_lap)
-                        success = True
-                    except RuntimeError as e:
-                        torch.cuda.empty_cache()
-                        block_size = [block_size[i] if i != test_img.ndim - 1 - failed_count else block_size[i] + 1 for
-                                      i in range(test_img.ndim)]
-                        failed_count = (failed_count + 1) % test_img.ndim
-                        logger.error(f"Stage 2 Error, retry...\n{e}")
+                final_result = _run_tiled_prediction_with_retry(
+                    model,
+                    sr_input,
+                    opt["val"].get("min_devide_by", 8),
+                    run_denoise=False,
+                    run_sr=True,
+                )
 
                 task_suffix = '_SR_'
                 fold_name = "SR"
 
             else:
                 # === Original logic (non-split mode) ===
-                net_axes_in_div_by = [opt['val'].get('min_devide_by', 8)] * test_img.ndim
-                block_size, overlap = model.block_size, model.over_lap
-                success = False
-                failed_count = 0
-                while not success:
-                    try:
-                        final_result = predict_tile(model, test_img, net_axes_in_div_by, block_size, overlap)
-                        success = True
-                    except RuntimeError as e:
-                        torch.cuda.empty_cache()
-                        block_size = [block_size[i] if i != test_img.ndim - 1 - failed_count else block_size[i] + 1 for
-                                      i in range(test_img.ndim)]
-                        failed_count = (failed_count + 1) % test_img.ndim
-                        logger.error(f"Runtime error, retry...\n{e}")
+                final_result = _run_tiled_prediction_with_retry(
+                    model,
+                    test_img,
+                    opt["val"].get("min_devide_by", 8),
+                    run_denoise=bool(opt["dn_label"]),
+                    run_sr=bool(opt["sr_label"]),
+                )
 
                 if opt['sr_label']:
                     task_suffix, fold_name = '_SR_', "SR"

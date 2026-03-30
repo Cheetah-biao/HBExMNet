@@ -41,11 +41,6 @@ def _resolve_denoise_target_path(config):
     if config.get("task") != "Denoise":
         return config.get("hr_path", "")
 
-    if config.get("mr_path"):
-        mr_path = Path(config["mr_path"])
-        if mr_path.exists():
-            return str(mr_path)
-
     hr_path = Path(config["hr_path"])
     sibling_mr = hr_path.parent / "MR"
     if hr_path.name.upper() == "GT" and sibling_mr.exists():
@@ -69,7 +64,6 @@ def _normalize_config(selection=None):
         "task": task,
         "hr_path": str(selection.get("hr_path", default_gt if default_gt is not None and default_gt.exists() else "")),
         "lr_path": str(selection.get("lr_path", default_lr if default_lr is not None and default_lr.exists() else "")),
-        "mr_path": "",
         "patch_d": str(selection.get("patch_d", defaults["patch_d"])),
         "patch_h": str(selection.get("patch_h", defaults["patch_h"])),
         "patch_w": str(selection.get("patch_w", defaults["patch_w"])),
@@ -415,27 +409,25 @@ def chunking_data(selection=None):
     label_tag = f"{config['mode']}_{config['organelle']}_{config['task']}"
     output_file = _training_data_file_for_task(config["task"])
     primary_target_path = config["hr_path"]
-    mr_path = config["mr_path"] or None
 
     if config["task"] == "Denoise":
         primary_target_path = _resolve_denoise_target_path(config)
-        mr_path = None
 
     generate_training_data(
         hr_path=primary_target_path,
         lr_path=config["lr_path"],
-        mr_path=mr_path,
+        mr_path=None,
         output_file=str(output_file),
         patch_size=patch_size,
         factor=factor,
         overlap=0.5,
     )
 
-    return label_tag, factor, primary_target_path, config["lr_path"], config["mr_path"], str(output_file)
+    return label_tag, factor, primary_target_path, config["lr_path"], str(output_file)
 
 
 if __name__ == "__main__":
-    label, factor, hr_path, lr_path, _mr_path, output_file = chunking_data()
+    label, factor, hr_path, lr_path, output_file = chunking_data()
     print("--- GUI Selections ---")
     print(f"Constructed Label: {label}")
     print(f"Factor: {factor}")

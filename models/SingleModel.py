@@ -4,32 +4,35 @@ from collections import OrderedDict
 import torch
 import torch.nn as nn
 from torch.nn.parallel import DataParallel, DistributedDataParallel
-import models.networks as networks
-import models.lr_scheduler as lr_scheduler
-from .base_model import BaseModel
-from models.modules.loss import ReconstructionLoss, PerceptualLoss
-from models.modules.Quantization import Quantization
 
-logger = logging.getLogger('base')
+import models.lr_scheduler as lr_scheduler
+import models.networks as networks
+from models.modules.Quantization import Quantization
+from models.modules.loss import ReconstructionLoss
+
+from .base_model import BaseModel
+
+
+logger = logging.getLogger("base")
 
 
 class SingleModel(BaseModel):
     def __init__(self, opt):
-        super(SingleModel, self).__init__(opt)
+        super().__init__(opt)
 
-        if opt['dist']:
+        if opt["dist"]:
             self.rank = torch.distributed.get_rank()
         else:
             self.rank = -1  # non dist training
-        train_opt = opt['train']
-        test_opt = opt['test']
+        train_opt = opt["train"]
+        test_opt = opt["test"]
         self.train_opt = train_opt
         self.test_opt = test_opt
 
-        self.out_channel = opt['network_C']['out_nc']
+        self.out_channel = opt["network_C"]["out_nc"]
 
         self.netC = networks.define_C(opt).to(self.device)
-        if opt['dist']:
+        if opt["dist"]:
             self.netC = DistributedDataParallel(self.netC, device_ids=[torch.cuda.current_device()])
         else:
             self.netC = DataParallel(self.netC)
@@ -128,9 +131,7 @@ class SingleModel(BaseModel):
         return out_dict
 
     def get_train_SR(self):
-        Denoise = self.output.detach().float().cpu()
-        Denoise = self.output.detach().float().cpu()
-        return Denoise
+        return self.output.detach().float().cpu()
 
     def print_network(self):
         s, n = self.get_network_description(self.netC)

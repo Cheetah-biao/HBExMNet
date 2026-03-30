@@ -1,24 +1,20 @@
 import logging
 
-logger = logging.getLogger('base')
+
+logger = logging.getLogger("base")
 
 
 def create_model(opt):
-    model = opt['model']
-    if model == 'SingleModel':
-        from .SingleModel import SingleModel as M
-    elif model == 'Single_v':
-        from .single_v_model import ImageRestorationModel as M
-    elif model == 'GanModel':
-        from .GanModel import GanModel as M
-    elif model == 'DualstageModel':
-        from .DualstageGanModel import DualstageGanModel as M
-    elif model == 'Dualstage_v':
-        from .dual_stage_v_model import Dual_stage_v_Model as M
-    elif model == 'Triplestage_v':
-        from .triple_stage_v_model import Triple_stage_v_Model as M
+    model_name = opt["model"]
+    if model_name == "SingleModel":
+        from .SingleModel import SingleModel as model_cls
+    elif model_name == "DualstageModel":
+        from .DualstageGanModel import DualstageGanModel as model_cls
+    elif model_name == "Triplestage_v":
+        from .triple_stage_v_model import Triple_stage_v_Model as model_cls
     else:
-        raise NotImplementedError('Model [{:s}] not recognized.'.format(model))
-    m = M(opt)
-    logger.info('Model [{:s}] is created.'.format(m.__class__.__name__))
-    return m
+        raise NotImplementedError(f"Model [{model_name}] is not supported in this release.")
+
+    model = model_cls(opt)
+    logger.info("Model [%s] is created.", model.__class__.__name__)
+    return model
