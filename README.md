@@ -1,4 +1,4 @@
-# HBExMNet
+﻿# HBExMNet
 
 HBExMNet is the Python training and inference project for multi-stage volumetric image restoration.
 
@@ -112,8 +112,7 @@ Large files are intentionally distributed outside the Git repository.
 | --- | --- | --- | --- |
 | Pretrained models | trained checkpoints under `experiments/` | `HBExMNet/experiments/` | <div align="center"><a href="https://drive.google.com/file/d/1-3rAfLrllMZDUWnQgUhWPFKFb2ahjIH3/view?usp=drive_link"><img src="https://img.shields.io/badge/Models-4285F4?style=flat-square&logo=googledrive&logoColor=white" alt="Models" /></a></div> |
 | Test data package | example TIFF stacks for inference | sibling folder `data/` beside `HBExMNet/` | <div align="center"><a href="https://drive.google.com/file/d/1-3rAfLrllMZDUWnQgUhWPFKFb2ahjIH3/view?usp=drive_link"><img src="https://img.shields.io/badge/Data-4285F4?style=flat-square&logo=googledrive&logoColor=white" alt="Data" /></a></div> |
-| Optional training sample package | example `LR` and `GT` folders for training | sibling folder `Train_data/` beside `HBExMNet/` | <div align="center"><a href="https://drive.google.com/file/d/1-3rAfLrllMZDUWnQgUhWPFKFb2ahjIH3/view?usp=drive_link"><img src="https://img.shields.io/badge/Train__data-4285F4?style=flat-square&logo=googledrive&logoColor=white" alt="Train_data" /></a></div> |
-| Standalone Windows software | compiled C++ TensorRT inference package | any local folder | <div align="center"><a href="https://drive.google.com/file/d/1DJPh4Je8HOOB59zn1y3yAdo2cn21X7wj/view?usp=sharing" alt="Software" /></a></div> |
+| Standalone Windows software | compiled C++ TensorRT inference package | any local folder | <div align="center"><a href="https://drive.google.com/file/d/1DJPh4Je8HOOB59zn1y3yAdo2cn21X7wj/view?usp=sharing"><img src="https://img.shields.io/badge/Software-4285F4?style=flat-square&logo=googledrive&logoColor=white" alt="Software" /></a></div> |
 
 ## Main Entry Points
 
@@ -186,14 +185,17 @@ In the inference GUI, configure:
 
 - `Mode`
 - `Organelle`
-- `Denoise` and/or `Super-resolution`
+- default workflow: keep only `Super-resolution` checked
+- if you are processing live-cell data, also check `Denoise`
 - input TIFF folder
 - `XY` and `Z` voxel size in nanometers
 
 Important behavior:
 
 - `Z / XY` is computed automatically
-- the final saved output is fixed at `3x` in `X / Y / Z`
+- the default GUI voxel size is `XY = 65 nm`, `Z = 65 nm`
+- denoise-only output keeps the input voxel size and does not apply interpolation or final downsampling
+- SR output is fixed to `6x` in `X / Y / Z`, with no final downsampling
 - output is written into a timestamped folder beside the selected input folder
 
 ## Command-Line Examples
@@ -233,7 +235,7 @@ python Inference.py `
   --task both `
   --input-path \path\to\data_dir `
   --xy-nm 65 `
-  --z-nm 200
+  --z-nm 65
 ```
 
 ## Notes
@@ -247,3 +249,6 @@ python Inference.py `
 - Raw training data is recommended to stay in a sibling `Train_data/` folder beside `HBExMNet`.
 - Generated patch files such as `training_data_denoise.npz` and `training_data_sr.npz` are written into `HBExMNet/data`.
 - The standalone Windows C++ inference software is released separately for users who want direct desktop deployment without configuring Python.
+
+
+

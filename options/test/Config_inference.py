@@ -6,11 +6,12 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter.filedialog import askdirectory
 
-from utils.project_paths import find_external_data_dir, workspace_path
+from utils.project_paths import workspace_path
 
 
 EXPERIMENTS_ROOT = workspace_path("experiments")
-DEFAULT_DATA_ROOT = find_external_data_dir("data")
+DEFAULT_DATA_ROOT = workspace_path("data")
+APP_ICON = Path(__file__).resolve().parents[2] / "assets" / "Fig1.png"
 
 THEME = {
     "bg": "#12161C",
@@ -97,14 +98,14 @@ def _normalize_selection(selection=None):
     if xy_nm is None:
         xy_nm = 65.0
     if z_nm is None:
-        z_nm = 200.0
+        z_nm = 65.0
     z_zoom = selection.get("z_zoom")
     if z_zoom is None:
         z_zoom = float(z_nm) / float(xy_nm) if selection.get("sr", True) else 1.0
     return {
         "mode": selection.get("mode", ""),
         "organelle": selection.get("organelle", ""),
-        "denoise": bool(selection.get("denoise", True)),
+        "denoise": bool(selection.get("denoise", False)),
         "sr": bool(selection.get("sr", True)),
         "input_path": str(selection.get("input_path", DEFAULT_DATA_ROOT if DEFAULT_DATA_ROOT.exists() else "")),
         "xy_nm": str(xy_nm),
@@ -216,6 +217,17 @@ def _apply_dark_theme(win, style):
     win.option_add("*TCombobox*Listbox*font", ("Segoe UI", 10))
 
 
+def _apply_window_icon(win):
+    if not APP_ICON.exists():
+        return
+    try:
+        icon_image = tk.PhotoImage(file=str(APP_ICON))
+        win.iconphoto(True, icon_image)
+        win._hbexmnet_icon = icon_image
+    except tk.TclError:
+        pass
+
+
 def _make_hero(parent, title, subtitle):
     hero = tk.Frame(parent, bg=THEME["panel_alt"], highlightbackground=THEME["border"], highlightthickness=1)
     hero.grid_columnconfigure(0, weight=1)
@@ -285,6 +297,7 @@ def _launch_gui():
     win.title("HBExMNet Inference")
     win.geometry("940x720")
     win.minsize(900, 680)
+    _apply_window_icon(win)
 
     style = ttk.Style()
     _apply_dark_theme(win, style)
@@ -293,12 +306,12 @@ def _launch_gui():
 
     mode_var = tk.StringVar(value=available_modes[0] if available_modes else "")
     organelle_var = tk.StringVar()
-    denoise_var = tk.BooleanVar(value=True)
+    denoise_var = tk.BooleanVar(value=False)
     sr_var = tk.BooleanVar(value=True)
     input_path_var = tk.StringVar(value=str(DEFAULT_DATA_ROOT) if DEFAULT_DATA_ROOT.exists() else "")
     xy_nm_var = tk.StringVar(value="65")
-    z_nm_var = tk.StringVar(value="200")
-    z_zoom_var = tk.StringVar(value=f"{200 / 65:.4f}")
+    z_nm_var = tk.StringVar(value="65")
+    z_zoom_var = tk.StringVar(value=f"{65 / 65:.4f}")
     status_var = tk.StringVar(value="Waiting for configuration...")
     model_hint_var = tk.StringVar()
     asset_note_var = tk.StringVar()
@@ -472,7 +485,7 @@ def _launch_gui():
 
     ttk.Label(
         sampling_frame,
-        text="The final saved output remains fixed at 3x in X / Y / Z.",
+        text="SR output remains fixed at 6x in X / Y / Z, with no final downsampling.",
         style="PanelMuted.TLabel",
         wraplength=360,
         justify=tk.LEFT,
