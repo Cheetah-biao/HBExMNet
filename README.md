@@ -73,20 +73,13 @@ conda install pytorch=1.11.0 torchvision=0.12.0 torchaudio=0.11.0 cudatoolkit=11
 pip install -r requirements.txt
 ```
 
-4. Download the pretrained models and datasets from the links below.
+4. Download the pretrained models and the test data package from the links below.
 
-Recommended layout after extraction:
+- The pretrained model package must be extracted into the `HBExMNet` project folder so that the model files are placed under `HBExMNet/experiments/`. The inference and training code will not run correctly unless the pretrained models are available there.
+- The test data package can be extracted to any convenient local folder. During inference, simply select that folder in the GUI or pass it with `--input-path`.
+- A training data package is not included in this release. Prepare your own training folders when needed.
 
-```text
-base_dir\
-|-- HBExMNet
-|   |-- experiments
-|   `-- data
-|-- data
-`-- Train_data
-```
-
-The GUI will look for `data` and `Train_data` beside the `HBExMNet` project folder by default.
+The GUI uses the bundled models under `HBExMNet/experiments/`. Test data does not need to be placed inside the project folder.
 
 ## Model Zoo And Data Download
 
