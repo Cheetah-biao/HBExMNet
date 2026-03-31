@@ -11,6 +11,7 @@ from utils.project_paths import workspace_path
 
 DEFAULT_TRAIN_ROOT = workspace_path("Train_data")
 APP_ICON = Path(__file__).resolve().parents[2] / "assets" / "Fig1.png"
+SUPPORTED_ORGANELLES = ("Tub", "Rab7", "Tomm20")
 
 THEME = {
     "bg": "#12161C",
@@ -333,7 +334,7 @@ def _launch_gui():
     ttk.Label(exp_frame, text="Mode", style="Card.TLabel").grid(row=0, column=0, sticky="w", padx=4, pady=6)
     ttk.Combobox(exp_frame, textvariable=mode_var, values=["TIM", "SDCM"], state="readonly", justify="center").grid(row=0, column=1, sticky="ew", padx=4, pady=6)
     ttk.Label(exp_frame, text="Organelle", style="Card.TLabel").grid(row=0, column=2, sticky="w", padx=4, pady=6)
-    ttk.Combobox(exp_frame, textvariable=organelle_var, values=["Tub", "Rab7", "Tomm20", "ER"], justify="center").grid(row=0, column=3, sticky="ew", padx=4, pady=6)
+    ttk.Combobox(exp_frame, textvariable=organelle_var, values=list(SUPPORTED_ORGANELLES), justify="center").grid(row=0, column=3, sticky="ew", padx=4, pady=6)
     ttk.Label(exp_frame, text="Task", style="Card.TLabel").grid(row=0, column=4, sticky="w", padx=4, pady=6)
     ttk.Combobox(exp_frame, textvariable=task_var, values=["Denoise", "SR"], state="readonly", justify="center").grid(row=0, column=5, sticky="ew", padx=4, pady=6)
 

@@ -35,28 +35,12 @@ HBExMNet/
 |-- docs
 |   `-- images
 |-- experiments
-|   |-- SDCM_Rab7_Denoise
-|   |-- SDCM_Rab7_SR
-|   |-- SDCM_Tomm20_Denoise
-|   |-- SDCM_Tomm20_SR
-|   |-- SDCM_Tub_Denoise
-|   |-- SDCM_Tub_SR
-|   |-- TIM_Rab7_Denoise
-|   |-- TIM_Rab7_SR
-|   |-- TIM_Tomm20_Denoise
-|   |-- TIM_Tomm20_SR
-|   |-- TIM_Tub_Denoise
-|   `-- TIM_Tub_SR
 |-- models
 |-- options
 `-- utils
 ```
 
-In the final release:
-
 - pretrained models under `experiments/` stay inside `HBExMNet`
-- generated training patch files can be written into `HBExMNet/data`
-- raw inference data and raw training data can stay outside the project folder
 
 ## Environment
 
@@ -114,26 +98,6 @@ Large files are intentionally distributed outside the Git repository.
 | Test data package | example TIFF stacks for inference | sibling folder `data/` beside `HBExMNet/` | <div align="center"><a href="https://drive.google.com/file/d/1xskC1NmFcO6JoV6DyWvYadZ482bAvckz/view?usp=drive_link"><img src="https://img.shields.io/badge/Data-4285F4?style=flat-square&logo=googledrive&logoColor=white" alt="Data" /></a></div> |
 | Standalone Windows software | compiled C++ TensorRT inference package | any local folder | <div align="center"><a href="https://drive.google.com/file/d/1DJPh4Je8HOOB59zn1y3yAdo2cn21X7wj/view?usp=sharing"><img src="https://img.shields.io/badge/Software-4285F4?style=flat-square&logo=googledrive&logoColor=white" alt="Software" /></a></div> |
 
-## Main Entry Points
-
-Python training:
-
-```text
-Train.py
-```
-
-Python inference:
-
-```text
-Inference.py
-```
-
-GUI configuration files:
-
-```text
-options/train/Config_train.py
-options/test/Config_inference.py
-```
 
 ## Quick Start
 
@@ -189,14 +153,9 @@ In the inference GUI, configure:
 - if you are processing live-cell data, also check `Denoise`
 - input TIFF folder
 - `XY` and `Z` voxel size in nanometers
-
-Important behavior:
-
-- `Z / XY` is computed automatically
 - the default GUI voxel size is `XY = 65 nm`, `Z = 65 nm`
-- denoise-only output keeps the input voxel size and does not apply interpolation or final downsampling
-- SR output is fixed to `6x` in `X / Y / Z`, with no final downsampling
-- output is written into a timestamped folder beside the selected input folder
+- denoise-only output keeps the input voxel size
+- SR output is fixed to `6x` in `X / Y / Z`
 
 ## Command-Line Examples
 
@@ -207,13 +166,9 @@ python Train.py `
   --mode TIM `
   --organelle Tub `
   --task Denoise `
-  --hr-path \path\to\GT_or_MR `
-  --lr-path \path\to\LR
+  --hr-path \path\to\Denoise_data\HSNR `
+  --lr-path \path\to\Denoise_data\LSNR
 ```
-
-Note:
-
-- if `MR` exists beside `GT`, denoise training automatically prefers `MR` as the effective stage-1 supervision target
 
 ### SR Training
 
@@ -222,8 +177,8 @@ python Train.py `
   --mode SDCM `
   --organelle Tub `
   --task SR `
-  --hr-path \path\to\GT `
-  --lr-path \path\to\LR
+  --hr-path \path\to\SR_data\GT `
+  --lr-path \path\to\SR_data\LR
 ```
 
 ### Inference
@@ -233,7 +188,7 @@ python Inference.py `
   --mode TIM `
   --organelle Tub `
   --task both `
-  --input-path \path\to\data_dir `
+  --input-path \path\data_dir `
   --xy-nm 65 `
   --z-nm 65
 ```
@@ -242,13 +197,14 @@ python Inference.py `
 
 - For inference, the required pretrained models must exist under `experiments/`.
 - If the required inference arguments are not provided, the Python GUI opens automatically.
-- For denoise training, the effective stage-1 supervision should match the LR scale.
-- For SR training, only `LR` and `GT` are required. Intermediate supervision is generated implicitly by downsampling `GT` to the `LR` size during patch preparation.
 - Pretrained models should be placed under `HBExMNet/experiments`.
-- Raw inference data is recommended to stay in a sibling `data/` folder beside `HBExMNet`.
-- Raw training data is recommended to stay in a sibling `Train_data/` folder beside `HBExMNet`.
-- Generated patch files such as `training_data_denoise.npz` and `training_data_sr.npz` are written into `HBExMNet/data`.
 - The standalone Windows C++ inference software is released separately for users who want direct desktop deployment without configuring Python.
 
+## Acknowledgements
 
+This program was developed using deep learning via PyTorch. We also acknowledge the generous contributions of Xintao Wang et al.[1] and Martin Weigert et al.[2]. You are welcome to use the code or program freely for research purposes. For further inquiries, please contact us at feipeng@hust.edu.cn or chenlongbiao@hust.edu.cn.
+
+## References
+1. Xintao Wang, Liangbin Xie, Ke Yu, Kelvin C.K. Chan, Chen Change Loy, and Chao Dong. BasicSR: Open Source Image and Video Restoration Toolbox. https://github.com/xinntao/BasicSR, 2022.
+2. Martin Weigert, Uwe Schmidt, Tobias Boothe, Andreas Muller, Alexandr Dibrov, Akanksha Jain, Benjamin Wilhelm, Deborah Schmidt, Coleman Broaddus, and Gene Myers. Content-aware image restoration: pushing the limits of fluorescence microscopy. Nature Methods, 15, 1090-1097, 2018.
 

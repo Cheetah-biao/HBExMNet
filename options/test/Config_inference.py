@@ -12,6 +12,7 @@ from utils.project_paths import workspace_path
 EXPERIMENTS_ROOT = workspace_path("experiments")
 DEFAULT_DATA_ROOT = workspace_path("data")
 APP_ICON = Path(__file__).resolve().parents[2] / "assets" / "Fig1.png"
+SUPPORTED_ORGANELLES = ("Tub", "Rab7", "Tomm20")
 
 THEME = {
     "bg": "#12161C",
@@ -71,6 +72,8 @@ def _scan_models():
         if not parsed:
             continue
         mode, organelle, task, folder_name = parsed
+        if organelle not in SUPPORTED_ORGANELLES:
+            continue
         models.append(
             ModelEntry(
                 mode=mode,
