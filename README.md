@@ -110,8 +110,8 @@ Large files are intentionally distributed outside the Git repository.
 
 | Asset | Content | Extract To | Link |
 | --- | --- | --- | --- |
-| Pretrained models | trained checkpoints under `experiments/` | `HBExMNet/experiments/` | <div align="center"><a href="[https://drive.google.com/file/d/1-3rAfLrllMZDUWnQgUhWPFKFb2ahjIH3/view?usp=drive_link](https://drive.google.com/file/d/1HQ-yCvWVl-AANkWs_bIiMALu_q7TZKLA/view?usp=sharing)"><img src="https://img.shields.io/badge/Models-4285F4?style=flat-square&logo=googledrive&logoColor=white" alt="Models" /></a></div> |
-| Test data package | example TIFF stacks for inference | sibling folder `data/` beside `HBExMNet/` | <div align="center"><a href="[https://drive.google.com/file/d/1-3rAfLrllMZDUWnQgUhWPFKFb2ahjIH3/view?usp=drive_link](https://drive.google.com/file/d/1xskC1NmFcO6JoV6DyWvYadZ482bAvckz/view?usp=sharing)"><img src="https://img.shields.io/badge/Data-4285F4?style=flat-square&logo=googledrive&logoColor=white" alt="Data" /></a></div> |
+| Pretrained models | trained checkpoints under `experiments/` | `HBExMNet/experiments/` | <div align="center"><a href="https://drive.google.com/file/d/1HQ-yCvWVl-AANkWs_bIiMALu_q7TZKLA/view?usp=drive_link"><img src="https://img.shields.io/badge/Models-4285F4?style=flat-square&logo=googledrive&logoColor=white" alt="Models" /></a></div> |
+| Test data package | example TIFF stacks for inference | sibling folder `data/` beside `HBExMNet/` | <div align="center"><a href="https://drive.google.com/file/d/1xskC1NmFcO6JoV6DyWvYadZ482bAvckz/view?usp=drive_link"><img src="https://img.shields.io/badge/Data-4285F4?style=flat-square&logo=googledrive&logoColor=white" alt="Data" /></a></div> |
 | Standalone Windows software | compiled C++ TensorRT inference package | any local folder | <div align="center"><a href="https://drive.google.com/file/d/1DJPh4Je8HOOB59zn1y3yAdo2cn21X7wj/view?usp=sharing"><img src="https://img.shields.io/badge/Software-4285F4?style=flat-square&logo=googledrive&logoColor=white" alt="Software" /></a></div> |
 
 ## Main Entry Points
