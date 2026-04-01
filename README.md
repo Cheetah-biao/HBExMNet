@@ -116,14 +116,6 @@ In the training GUI, configure:
 - training folders for `LR` and `GT`
 - patch parameters
 
-Outputs:
-
-```text
-data\training_data_denoise.npz
-data\training_data_sr.npz
-experiments\<MODE>_<Organelle>_<Task>
-```
-
 ### Inference
 
 Run the following command from the project root:
@@ -140,13 +132,14 @@ Example inference GUI:
 
 In the inference GUI, configure:
 
-- `Mode`
+- `Mode`: `TIM` or `SDCM`
 - `Organelle`
-- default workflow: keep only `Super-resolution` checked
-- if you are processing live-cell data, also check `Denoise`
+- `TIM` defaults to `XY = 59 nm`, `Z = 59 nm`, with only `Super-resolution` checked
+- `SDCM` defaults to `Denoise + Super-resolution`
+- `SDCM Tub` and `Rab7` default to `XY = 65 nm`, `Z = 200 nm`
+- `SDCM Tomm20` defaults to `XY = 65 nm`, `Z = 300 nm`
 - input TIFF folder
-- `XY` and `Z` voxel size in nanometers
-- the default GUI voxel size is `XY = 65 nm`, `Z = 65 nm`
+- `XY` and `Z` voxel size in nanometers if you want to override the preset
 - denoise-only output keeps the input voxel size
 - SR output is fixed to `6x` in `X / Y / Z`
 
@@ -178,12 +171,12 @@ python Train.py `
 
 ```powershell
 python Inference.py `
-  --mode TIM `
+  --mode SDCM `
   --organelle Tub `
   --task both `
   --input-path \path\data_dir `
   --xy-nm 65 `
-  --z-nm 65
+  --z-nm 200
 ```
 
 ## Notes

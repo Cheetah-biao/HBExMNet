@@ -6,13 +6,21 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter.filedialog import askdirectory
 
-from utils.project_paths import workspace_path
+from utils.project_paths import workspace_path, find_external_data_dir
 
 
 EXPERIMENTS_ROOT = workspace_path("experiments")
-DEFAULT_DATA_ROOT = workspace_path("data")
+DEFAULT_DATA_ROOT = find_external_data_dir("data")
 APP_ICON = Path(__file__).resolve().parents[2] / "assets" / "Fig1.png"
 SUPPORTED_ORGANELLES = ("Tub", "Rab7", "Tomm20")
+DEFAULT_PROFILE_PRESETS = {
+    ("TIM", "Tub"): {"xy_nm": 59.0, "z_nm": 59.0, "denoise": False},
+    ("TIM", "Rab7"): {"xy_nm": 59.0, "z_nm": 59.0, "denoise": False},
+    ("TIM", "Tomm20"): {"xy_nm": 59.0, "z_nm": 59.0, "denoise": False},
+    ("SDCM", "Tub"): {"xy_nm": 65.0, "z_nm": 200.0, "denoise": True},
+    ("SDCM", "Rab7"): {"xy_nm": 65.0, "z_nm": 200.0, "denoise": True},
+    ("SDCM", "Tomm20"): {"xy_nm": 65.0, "z_nm": 300.0, "denoise": True},
+}
 
 THEME = {
     "bg": "#12161C",
@@ -60,6 +68,10 @@ def parse_model_name(full_name):
     return parts[0], parts[1], task, full_name
 
 
+def _default_profile(mode: str, organelle: str):
+    return DEFAULT_PROFILE_PRESETS.get((mode, organelle), {"xy_nm": 65.0, "z_nm": 65.0, "denoise": False})
+
+
 def _scan_models():
     models = []
     if not EXPERIMENTS_ROOT.exists():
@@ -99,9 +111,9 @@ def _normalize_selection(selection=None):
     xy_nm = selection.get("xy_nm")
     z_nm = selection.get("z_nm")
     if xy_nm is None:
-        xy_nm = 65.0
+        xy_nm = 59.0
     if z_nm is None:
-        z_nm = 65.0
+        z_nm = 59.0
     z_zoom = selection.get("z_zoom")
     if z_zoom is None:
         z_zoom = float(z_nm) / float(xy_nm) if selection.get("sr", True) else 1.0
@@ -305,19 +317,23 @@ def _launch_gui():
     style = ttk.Style()
     _apply_dark_theme(win, style)
 
-    available_modes = sorted({entry.mode for entry in models})
+    preferred_modes = ["TIM", "SDCM"]
+    available_modes = [mode for mode in preferred_modes if mode in {entry.mode for entry in models}]
+    if not available_modes:
+        available_modes = sorted({entry.mode for entry in models})
 
-    mode_var = tk.StringVar(value=available_modes[0] if available_modes else "")
+    mode_var = tk.StringVar(value="TIM" if "TIM" in available_modes else (available_modes[0] if available_modes else ""))
     organelle_var = tk.StringVar()
     denoise_var = tk.BooleanVar(value=False)
     sr_var = tk.BooleanVar(value=True)
     input_path_var = tk.StringVar(value=str(DEFAULT_DATA_ROOT) if DEFAULT_DATA_ROOT.exists() else "")
-    xy_nm_var = tk.StringVar(value="65")
-    z_nm_var = tk.StringVar(value="65")
-    z_zoom_var = tk.StringVar(value=f"{65 / 65:.4f}")
+    xy_nm_var = tk.StringVar(value="59")
+    z_nm_var = tk.StringVar(value="59")
+    z_zoom_var = tk.StringVar(value=f"{59 / 59:.4f}")
     status_var = tk.StringVar(value="Waiting for configuration...")
     model_hint_var = tk.StringVar()
     asset_note_var = tk.StringVar()
+    preset_guard = {"active": False}
 
     def organelle_options():
         organelles = []
@@ -328,6 +344,22 @@ def _launch_gui():
                 continue
             organelles.append(organelle)
         return organelles
+
+    def apply_profile_preset(*_args):
+        if preset_guard["active"]:
+            return
+        organelle = organelle_var.get()
+        if not organelle:
+            return
+        preset = _default_profile(mode_var.get(), organelle)
+        preset_guard["active"] = True
+        try:
+            xy_nm_var.set(str(int(preset["xy_nm"])) if float(preset["xy_nm"]).is_integer() else str(preset["xy_nm"]))
+            z_nm_var.set(str(int(preset["z_nm"])) if float(preset["z_nm"]).is_integer() else str(preset["z_nm"]))
+            denoise_var.set(bool(preset["denoise"]))
+            sr_var.set(True)
+        finally:
+            preset_guard["active"] = False
 
     def browse_input_path():
         path = askdirectory(title="Select the inference input directory")
@@ -353,6 +385,8 @@ def _launch_gui():
         organelle_combo["values"] = values
         if organelle_var.get() not in values:
             organelle_var.set(values[0] if values else "")
+        else:
+            apply_profile_preset()
         refresh_status()
 
     def refresh_status(*_args):
@@ -426,7 +460,7 @@ def _launch_gui():
     hero = _make_hero(
         main,
         "HBExMNet Inference",
-        "Choose one TIFF folder to restore, select the model profile, and keep voxel sizes in nanometers.",
+        "Choose one TIFF folder to restore. The GUI loads the default voxel size and denoise setting from the selected mode and organelle.",
     )
     hero.grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 12))
 
@@ -488,7 +522,7 @@ def _launch_gui():
 
     ttk.Label(
         sampling_frame,
-        text="SR output remains fixed at 6x in X / Y / Z, with no final downsampling.",
+        text="Defaults follow the bundled data sheet: TIM uses SR only, while SDCM enables Denoise and keeps the matched voxel size preset.",
         style="PanelMuted.TLabel",
         wraplength=360,
         justify=tk.LEFT,
@@ -509,6 +543,7 @@ def _launch_gui():
     start_button.grid(row=0, column=1, padx=(18, 0), sticky="e")
 
     mode_var.trace_add("write", refresh_organelle_options)
+    organelle_var.trace_add("write", apply_profile_preset)
     for variable in (organelle_var, denoise_var, sr_var, input_path_var, xy_nm_var, z_nm_var):
         variable.trace_add("write", refresh_status)
 
