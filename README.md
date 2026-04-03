@@ -87,9 +87,9 @@ Large files are intentionally distributed outside the Git repository.
 
 | Asset | Content | Extract To | Link |
 | --- | --- | --- | --- |
-| Pretrained models | trained checkpoints under `experiments/` | `HBExMNet/experiments/` | <div align="center"><a href="https://drive.google.com/file/d/1HQ-yCvWVl-AANkWs_bIiMALu_q7TZKLA/view?usp=drive_link"><img src="https://img.shields.io/badge/Models-4285F4?style=flat-square&logo=googledrive&logoColor=white" alt="Models" /></a></div> |
-| Test data package | example TIFF stacks for inference | sibling folder `data/` beside `HBExMNet/` | <div align="center"><a href="https://drive.google.com/file/d/1xskC1NmFcO6JoV6DyWvYadZ482bAvckz/view?usp=drive_link"><img src="https://img.shields.io/badge/Data-4285F4?style=flat-square&logo=googledrive&logoColor=white" alt="Data" /></a></div> |
-| Standalone Windows software | compiled C++ TensorRT inference package | any local folder | <div align="center"><a href="https://drive.google.com/file/d/1DJPh4Je8HOOB59zn1y3yAdo2cn21X7wj/view?usp=sharing"><img src="https://img.shields.io/badge/Software-4285F4?style=flat-square&logo=googledrive&logoColor=white" alt="Software" /></a></div> |
+| Pretrained models | trained checkpoints under `experiments/` | `HBExMNet/experiments/` | <div align="center"><a href="https://drive.google.com/file/d/1lyK_Xlty2XjyPswDPf9otiYXmex_DsiA/view?usp=sharing"><img src="https://img.shields.io/badge/Models-4285F4?style=flat-square&logo=googledrive&logoColor=white" alt="Models" /></a></div> |
+| Test data package | example TIFF stacks for inference | sibling folder `data/` beside `HBExMNet/` | <div align="center"><a href="https://drive.google.com/file/d/1mYuX0no779IjG9qgwa8DzHmhW4rrSEyC/view?usp=drive_link"><img src="https://img.shields.io/badge/Data-4285F4?style=flat-square&logo=googledrive&logoColor=white" alt="Data" /></a></div> |
+| Standalone Windows software | compiled C++ TensorRT inference package | any local folder | <div align="center"><a href="https://drive.google.com/file/d/1y4zZPHFt4tSbWfCmNTZYXznky_g2y7J3/view?usp=sharing"><img src="https://img.shields.io/badge/Software-4285F4?style=flat-square&logo=googledrive&logoColor=white" alt="Software" /></a></div> |
 
 
 ## Quick Start
