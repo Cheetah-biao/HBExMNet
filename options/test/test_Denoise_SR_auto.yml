@@ -1,0 +1,59 @@
+name: 0831
+use_tb_logger: true
+model: Triplestage_v
+distortion: sr
+scale: 6
+
+gpu_ids: [1]
+
+datasets:
+  test_1: # the 1st test dataset
+    name: er
+    mode: LQ
+    zoom_scale: 1
+    dataroot_LQ: ~
+    max_p: 100
+
+#### network
+network_C:
+  which_model_C: Unet
+  n_fea: 32
+  out_nc: 1
+
+Net1:
+  which_model: NAFNet
+  out_nc: 1
+  n_fea: 64
+
+Net_SR:
+  which_model: HAT
+  out_nc: 1
+  scale: 6
+  n_fea: 96
+  num_heads: [ 6, 6, 6, 6 ]
+  depth: [ 6, 6, 6, 6 ]
+
+  mlp_ratio: 2.
+  window_size: [ 8, 7, 7 ]
+
+path:
+    pretrain_model_C: ~
+
+val:
+  crop_size_d: 4
+  crop_size_h: 4
+  crop_size_w: 4
+
+  over_lap: 10
+  low_p: 0.2
+  high_p: 99.99
+  mode: 16bit
+
+  save_img: true
+  grids: true
+
+  metrics:
+    psnr: # metric name, can be arbitrary
+      type: calculate_psnr
+      crop_border: 0
+      test_y_channel: false

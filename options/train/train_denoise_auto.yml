@@ -1,0 +1,52 @@
+#### general settings
+use_tb_logger: true
+model: SingleModel
+distortion: sr
+scale: 1
+gpu_ids: [ 0 ]
+cpu_threads_num: 5
+
+network_C:
+  which_model_C: Unet
+  out_nc: 1
+  n_fea: 32
+  num_g: 5
+  num_b: 10
+
+#### path
+
+path:
+  strict_load: true
+
+train:
+  batch_size: 4
+  lr_C: !!float 1e-4
+  beta1: 0.9
+  beta2: 0.99
+  niter: !!float 100000
+  warmup_iter: -1  # no warm up
+  #
+  lr_scheme: CosineAnnealingLR_Restart
+  T_period: [50000]
+  eta_min: !!float 1e-7
+  #
+#  lr_scheme: MultiStepLR
+#  lr_steps: [ 30000, 50000, 80000, 110000, 130000, 140000 ]
+#  lr_gamma: 0.5
+
+
+  pixel_criterion_back: l1
+  feature_criterion: l1
+
+  weight_decay_C: 0
+  gradient_clipping: 10
+
+  manual_seed: 10
+
+  lambda_rec_back: 1
+  val_freq: !!float 5000
+#### logger
+
+logger:
+  print_freq: 1
+  save_checkpoint_freq: !!float 5000

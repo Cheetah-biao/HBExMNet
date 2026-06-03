@@ -1,0 +1,17 @@
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Local training and logging outputs
+logs/
+tb_logger/
+
+# Generated training patch files
+data/training_data_*.npz
+
+# Runtime artifacts
+*.log
+
+# Keep the experiments folder in the repo, but ignore downloaded or trained weights
+experiments/*
+!experiments/README.md

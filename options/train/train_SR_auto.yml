@@ -1,0 +1,99 @@
+name: 20251020_test_sr
+use_tb_logger: true
+model: DualstageModel
+distortion: sr
+scale: 6
+gpu_ids: [1]
+cpu_threads_num: 5
+
+Net1:
+  which_model: NAFNet
+  out_nc: 1
+  n_fea: 64
+
+Net_SR:
+  which_model: HAT
+  out_nc: 1
+  scale: 6
+  n_fea: 96
+  num_heads: [ 6, 6, 6, 6 ]
+  depth: [ 6, 6, 6, 6 ]
+
+  mlp_ratio: 2.
+  window_size: [ 8, 7, 7 ]
+
+network_D:
+  which_model_D: Unet_discriminator_sn
+  in_nc: 1
+  nf: 64
+
+#### path
+
+path:
+  pretrain_model_net1: ~
+  pretrain_model_SR: ~
+  pretrain_model_D: ~
+  strict_load: true
+
+train:
+  batch_size: 1
+  lr_C: !!float 1e-4
+  beta1: 0.9
+  beta2: 0.99
+  niter: !!float 100000
+  warmup_iter: -1  # no warm up
+
+  lr_scheme: CosineAnnealingLR_Restart
+  T_period: [ 50000 ]
+  eta_min: !!float 1e-5
+
+  pixel_criterion_net1: l1
+  pixel_criterion_sr: l1
+  feature_criterion: l1
+
+  weight_decay_C: 0
+  gradient_clipping: 10
+
+  manual_seed: 10
+
+  lambda_rec_back: 1
+  lambda_mip: 0
+  lambda_gan: 0.01
+  lambda_tv: 0
+  lambda_edge: 0
+  lambda_skel: 1
+  lambda_pearson: 0
+  lambda_feature: 0.1
+  lambda_FFTLoss: 0.01
+  lambda_Tvloss: 0
+
+  perceptual_opt:
+    type: PerceptualLoss
+    layer_weights:
+      # before relu
+      'conv1_2': 0.1
+      'conv2_2': 0.1
+      'conv3_4': 1
+      'conv4_4': 1
+      'conv5_4': 1
+    vgg_type: vgg19
+    use_input_norm: true
+    perceptual_weight: !!float 1.0
+    range_norm: false
+    criterion: l1
+
+  lr_D: !!float 1e-4
+  weight_decay_D: 0
+  beta1_D: 0.9
+  beta2_D: 0.99
+  gan_type: gan
+  D_update_ratio: 1
+  D_init_iters: !!float 0
+
+  val_freq: !!float 2000
+#### logger
+logger:
+  print_freq: 1
+  #  save_checkpoint_freq: !!float 1
+  save_checkpoint_freq: !!float 2000
+#
