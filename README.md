@@ -206,9 +206,13 @@ python Inference.py `
 - Pretrained models should be placed under a resolved `experiments/` folder.
 - The standalone Windows C++ inference software is released separately for users who want direct desktop deployment without configuring Python.
 
+## License
+
+HBExMNet source code is released under the [Apache License, Version 2.0](LICENSE). Third-party components retain their respective licenses, copyright notices, and attribution requirements.
+
 ## Acknowledgements
 
-This program was developed using deep learning via PyTorch. We also acknowledge the generous contributions of Xintao Wang et al.[1] and Martin Weigert et al.[2]. You are welcome to use the code or program freely for research purposes. For further inquiries, please contact us at feipeng@hust.edu.cn or chenlongbiao@hust.edu.cn.
+This program was developed using deep learning via PyTorch. We also acknowledge the generous contributions of Xintao Wang et al.[1] and Martin Weigert et al.[2]. For further inquiries, please contact us at feipeng@hust.edu.cn or chenlongbiao@hust.edu.cn.
 
 ## References
 1. Xintao Wang, Liangbin Xie, Ke Yu, Kelvin C.K. Chan, Chen Change Loy, and Chao Dong. BasicSR: Open Source Image and Video Restoration Toolbox. https://github.com/xinntao/BasicSR, 2022.
