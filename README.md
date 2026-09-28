@@ -16,7 +16,7 @@ Recommended hardware for the standalone Windows software:
 
 - 24 GB GPU memory recommended
 - 64 GB system RAM recommended
-- a working NVIDIA driver
+- an NVIDIA GPU with a compatible driver (required)
 - tested on NVIDIA GeForce RTX 3090 and RTX 4090
 
 ## Project Layout
@@ -90,6 +90,26 @@ Large files are intentionally distributed outside the Git repository.
 | Pretrained models | trained checkpoints under `experiments/` | `experiments/` | <div align="center"><a href="https://drive.google.com/file/d/14GVWL_8UbX9FhR6WgYvBI_3xUlVIV-av/view?usp=sharing"><img src="https://img.shields.io/badge/Models-4285F4?style=flat-square&logo=googledrive&logoColor=white" alt="Models" /></a></div> |
 | Test data package | example TIFF stacks for inference | sibling folder `data/` beside `HBExMNet/` | <div align="center"><a href="https://drive.google.com/file/d/1qb3GgSbdqtTj0OY-A_U8CHZ8NwEu35Y9/view?usp=sharing"><img src="https://img.shields.io/badge/Data-4285F4?style=flat-square&logo=googledrive&logoColor=white" alt="Data" /></a></div> |
 | Standalone Windows software | compiled C++ TensorRT inference package | any local folder | <div align="center"><a href="https://drive.google.com/file/d/1m7MphnmNS805QL0wC4ezANtvWap643G1/view?usp=sharing"><img src="https://img.shields.io/badge/Software-4285F4?style=flat-square&logo=googledrive&logoColor=white" alt="Software" /></a></div> |
+
+## Standalone Windows C++ Demo
+
+Download and extract the complete standalone Windows software package. It includes the executable, TensorRT dependencies, ONNX models, and prebuilt TensorRT engines; no Python installation or C++ compilation is needed to run it.
+
+For the included ILCM/Tub example, copy `data/ILCM/Tub/LR_tub.tif` from the test data package into a folder containing only this input TIFF. Double-click `run_gui.cmd`, select that folder, choose `ILCM` and `Tub`, keep the default `XY = 59 nm` and `Z = 59 nm`, set **Save downsample** to **None**, and start the run. The equivalent CLI command is:
+
+```powershell
+$package = "C:\path\to\Software\HBExMNet_TensorRT_Windows"
+$demoInput = "C:\path\to\demo_input"
+& "$package\bin\hbexmnet_trt_cli.exe" `
+  --assets-root "$package\trt_assets" `
+  --input-path $demoInput `
+  --mode ILCM --organelle Tub --precision fp32 `
+  --xy-nm 59 --z-nm 59 --save-downsample none
+```
+
+Successful execution creates `demo_input/<timestamp>/SR/best_SR_SR_LR_tub.tif`. With full-resolution saving, the 17 × 170 × 170 voxel, 16-bit input produces a 102 × 1020 × 1020 voxel, 16-bit TIFF.
+
+**Measured deployment and demo time (RTX 3090).** On a Windows 10 workstation with an NVIDIA GeForce RTX 3090 and prebuilt engines for this GPU, extracting the 2.03 GB software ZIP from local storage took approximately **15 seconds**. The first CLI run of the example took approximately **34 seconds** end to end; three further runs took a median of approximately **32 seconds** (range 32.2–32.5 seconds). The run time includes process startup, engine loading, inference, and TIFF writing. Download time, driver setup, and engine building are excluded from the extraction measurement. These timings apply to this input and workstation.
 
 
 ## Quick Start
